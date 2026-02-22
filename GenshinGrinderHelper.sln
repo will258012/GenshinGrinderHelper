@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 18
+VisualStudioVersion = 18.0.11222.15
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GenshinGrinderHelper", "GenshinGrinderHelper\GenshinGrinderHelper.csproj", "{EBA426EF-30F8-4034-9F2B-652CC5E186C8}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GenshinGrinderHelper.HotkeyListener", "GenshinGrinderHelper.HotkeyListener\GenshinGrinderHelper.HotkeyListener.vcxproj", "{86FF3B51-9079-4E71-BA10-3D14C976158B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{EBA426EF-30F8-4034-9F2B-652CC5E186C8}.Debug|x64.ActiveCfg = Debug|x64
+		{EBA426EF-30F8-4034-9F2B-652CC5E186C8}.Debug|x64.Build.0 = Debug|x64
+		{EBA426EF-30F8-4034-9F2B-652CC5E186C8}.Release|x64.ActiveCfg = Release|x64
+		{EBA426EF-30F8-4034-9F2B-652CC5E186C8}.Release|x64.Build.0 = Release|x64
+		{86FF3B51-9079-4E71-BA10-3D14C976158B}.Debug|x64.ActiveCfg = Debug|x64
+		{86FF3B51-9079-4E71-BA10-3D14C976158B}.Debug|x64.Build.0 = Debug|x64
+		{86FF3B51-9079-4E71-BA10-3D14C976158B}.Release|x64.ActiveCfg = Release|x64
+		{86FF3B51-9079-4E71-BA10-3D14C976158B}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {64ED0B15-CAD1-4E69-9044-251BC6F02C91}
+	EndGlobalSection
+EndGlobal

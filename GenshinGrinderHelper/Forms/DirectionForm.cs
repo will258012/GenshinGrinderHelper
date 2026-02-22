@@ -1,0 +1,396 @@
+﻿using GenshinGrinderHelper.Managers;
+using GenshinGrinderHelper.Properties;
+using static GenshinGrinderHelper.WindowUtils;
+
+namespace GenshinGrinderHelper.Forms
+{
+    public partial class DirectionForm : Form
+    {
+        private bool IsController
+        {
+            get => _isController;
+            set
+            {
+                BackgroundImage = value ? Resources.Direction_Controller : Resources.Direction;
+                _isController = value;
+            }
+        }
+
+        private readonly Dictionary<Direction, Point> directionPoints = [];
+        private readonly List<(Direction direction, string[] keywords)> directionKeywords =
+[
+                (Direction.WestNorth, ["西北"]),
+                (Direction.WestSouth, ["西南"]),
+                (Direction.EastNorth, ["东北"]),
+                (Direction.EastSouth, ["东南"]),
+                (Direction.North,    ["北"]),
+                (Direction.East,     ["东", "西东"]),
+                (Direction.South,    ["南"]),
+                (Direction.West,     ["西", "东西"]),
+
+                (Direction.WestNorth, ["10点", "十点", "11点", "十一点"]),
+                (Direction.North,     ["12点", "十二点"]),
+                (Direction.EastNorth, ["1点钟", "一点钟", "2点", "二点", "两点"]),
+                (Direction.East,      ["3点", "三点"]),
+                (Direction.EastSouth, ["4点", "四点", "5点", "五点"]),
+                (Direction.South,     ["6点", "六点"]),
+                (Direction.WestSouth, ["7点", "七点", "8点", "八点"]),
+                (Direction.West,      ["9点", "九点"]),
+
+/*                (Direction.WestNorth, ["地图左上"]),
+                (Direction.WestSouth, ["地图左下"]),
+                (Direction.EastNorth, ["地图右上"]),
+                (Direction.EastSouth, ["地图右下"]),
+                (Direction.North,    ["地图上"]),
+                (Direction.East,     ["地图右"]),
+                (Direction.South,    ["地图下"]),
+                (Direction.West,     ["地图左"]),*/
+            ];
+
+        private PictureBox markerBox;
+        private Direction currentDirection;
+        private bool _isController = false;
+        private NotifyIcon ico;
+        private readonly System.Windows.Forms.Timer windowTimer = new();
+        private readonly Logger logger = LogManager.GetCurrentClassLogger();
+        protected override bool ShowWithoutActivation => true;
+        public DirectionForm()
+        {
+            logger.Info("Initlizing");
+            Initialize();
+            InitializeDirectionMarkers();
+            InitalizeWindowUpdate();
+            IsController = false;
+            Enabled = false;
+            logger.Info("Successfully initalized");
+        }
+
+        private void Initialize()
+        {
+            try
+            {
+                Height = Screen.PrimaryScreen.Bounds.Height;
+                Width = Screen.PrimaryScreen.Bounds.Width;
+
+                SetStyle(
+                    ControlStyles.AllPaintingInWmPaint |
+                    ControlStyles.UserPaint |
+                    ControlStyles.OptimizedDoubleBuffer,
+                    true);
+
+                SuspendLayout();
+
+                ico = new();
+                ico.Text = "Genshin Grinder Helper";
+                ico.Visible = true;
+                ico.Click += ico_Click;
+
+#if NET48
+                ico.ContextMenu = new ContextMenu();
+                ico.ContextMenu.MenuItems.Add("切换UI偏移模式", ico_ContextMenuMode);
+                ico.ContextMenu.MenuItems.Add("退出", ico_ContextMenuExit);
+#endif
+#if NET10_0_OR_GREATER
+                ico.ContextMenuStrip = new ContextMenuStrip();
+                ico.ContextMenuStrip.RenderMode = ToolStripRenderMode.System;
+                ico.ContextMenuStrip.Items.Add("切换UI偏移模式", null, ico_ContextMenuMode);
+                ico.ContextMenuStrip.Items.Add("退出", null, ico_ContextMenuExit);
+#endif
+                AutoScaleDimensions = new SizeF(6f, 12f);
+                AutoScaleMode = AutoScaleMode.Font;
+                AutoSize = true;
+                BackColor = Color.White;
+                BackgroundImageLayout = ImageLayout.Stretch;
+                CausesValidation = false;
+                ClientSize = new Size(2560, 1440);
+                ControlBox = false;
+                DoubleBuffered = true;
+                FormBorderStyle = FormBorderStyle.None;
+                ShowInTaskbar = false;
+                TabStop = false;
+                StartPosition = FormStartPosition.CenterScreen;
+                Text = "Genshin Grinder Helper - Direction Window";
+                TopMost = true;
+                TransparencyKey = Color.White;
+                ResumeLayout(false);
+            }
+            catch (Exception e)
+            {
+                logger.Fatal(e, "Failed to initialize DirectionForm");
+                throw;
+            }
+        }
+        private void InitalizeWindowUpdate()
+        {
+            windowTimer.Interval = 10;
+            windowTimer.Tick += (s, e) => UpdateWindow();
+            windowTimer.Start();
+        }
+
+        private void UpdateWindow()
+        {
+            try
+            {
+                LPRECT ct = default;
+
+                if (!FindGameWindow(out var hWnd) || !GetClientRect(hWnd, ref ct))
+                    return;
+
+                int newWidth = ct.Right - ct.Left;
+                int newHeight = ct.Bottom - ct.Top;
+                float widthUnit = newWidth / 16f;
+                float heightUnit = newHeight / 9f;
+
+                if (!ClientToScreen(hWnd, ref ct)) return;
+
+                if (newWidth != newHeight)
+                {
+                    if (heightUnit > widthUnit)
+                        newHeight = (int)(widthUnit * 9);
+                    else
+                        newWidth = (int)(heightUnit * 16);
+                }
+
+                var newLocation = new Point(ct.Left, ct.Top);
+
+                var needUpdate = (Width != newWidth) ||
+                           (Height != newHeight) ||
+                           (Location != newLocation);
+
+                if (!needUpdate) return;
+
+                SuspendLayout();
+
+                if (Height != newHeight)
+                    Height = newHeight;
+                if (Width != newWidth)
+                    Width = newWidth;
+                if (Location != newLocation)
+                    Location = newLocation;
+
+                BringToFront();
+                UpdateMarkerPositions();
+                ResumeLayout();
+            }
+            catch (Exception e)
+            {
+                logger.Error(e, "Failed to update");
+            }
+        }
+
+        private void InitializeDirectionMarkers()
+        {
+            try
+            {
+                markerBox = new PictureBox
+                {
+                    Image = Resources.marker,
+                    Size = new Size(64, 64),
+                    SizeMode = PictureBoxSizeMode.Zoom,
+                    Visible = false,
+                    BackColor = Color.Transparent
+                };
+                markerBox.Hide();
+                Controls.Add(markerBox);
+                markerBox.BringToFront();
+
+                UpdateMarkerPositions();
+                SubtitleManager.Instance.OnSubtitleReceived += HandleSubtitleText;
+            }
+            catch (Exception e)
+            {
+                logger.Fatal(e, "Failed to initialize direction markers");
+                throw;
+            }
+        }
+
+        /*        private async void TestMarker()
+                {
+                    foreach (var direction in new[] { "北", "东北", "东", "东南", "南", "东南", "西", "西北" })
+                    {
+                        UpdateDirectionMarker(direction);
+                        await Task.Delay(500);
+                    }
+                }
+        */
+
+        private void UpdateMarkerPositions()
+        {
+            // 基本方向的坐标
+            int margin = IsController ? 95 : 0;
+
+            // 计算罗盘中心点
+            var centerX = (int)((margin + 195) / 2560f * Width);
+            var centerY = (int)(165 / 1440f * Height);
+
+            // 计算圆的半径
+            var radius = (int)(140 / 2560f * Width);
+
+            // 基本方向保持原有位置
+            directionPoints[Direction.East] = new Point(
+                (int)((margin + 350) / 2560f * Width),
+                (int)(160 / 1440f * Height)
+            );
+            directionPoints[Direction.West] = new Point(
+                (int)((margin + 35) / 2560f * Width),
+                (int)(160 / 1440f * Height)
+            );
+            directionPoints[Direction.South] = new Point(
+                (int)((margin + 195) / 2560f * Width),
+                (int)(320 / 1440f * Height)
+            );
+            directionPoints[Direction.North] = new Point(
+                (int)((margin + 195) / 2560f * Width),
+                (int)(10 / 1440f * Height)
+            );
+
+            // 45度方向使用圆形布局
+            var angle45 = Math.PI / 4;
+            var compoundDirections = new Dictionary<Direction, double>
+            {
+                { Direction.EastNorth, angle45 },
+                { Direction.EastSouth, 2 * Math.PI - angle45 },
+                { Direction.WestSouth, Math.PI + angle45 },
+                { Direction.WestNorth, Math.PI - angle45 }
+            };
+
+            foreach (var dir in compoundDirections)
+            {
+                directionPoints[dir.Key] = new Point(
+                    centerX + (int)(radius * Math.Cos(dir.Value)),
+                    centerY - (int)(radius * Math.Sin(dir.Value))
+                );
+            }
+
+            //logger.Info("Updated direction positions: {@directions}", directionPoints);
+        }
+
+        public void HandleSubtitleText(string subtitleText)
+        {
+            if (InvokeRequired)
+            {
+                Invoke(() => HandleSubtitleText(subtitleText));
+                return;
+            }
+
+            if (subtitleText == "字幕样式测试" || string.IsNullOrEmpty(subtitleText))
+            {
+                markerBox.Hide();
+                currentDirection = Direction.None;
+            }
+            else
+            {
+                bool matched = false;
+
+                foreach (var (direction, keywords) in directionKeywords)
+                {
+                    foreach (var keyword in keywords)
+                    {
+                        if (subtitleText.Contains(keyword))
+                        {
+                            matched = true;
+                            UpdateDirectionMarker(direction);
+                            break;
+                        }
+                    }
+
+                    if (matched)
+                        break;
+                }
+            }
+        }
+
+        private async void UpdateDirectionMarker(Direction direction)
+        {
+            try
+            {
+                logger.Trace("Updating direction marker to: " + direction);
+                if (currentDirection == direction)
+                {
+                    for (int i = 0; i < 2; i++)
+                    {
+                        markerBox.Hide();
+                        await Task.Delay(100);
+                        markerBox.Show();
+                        await Task.Delay(100);
+                    }
+                }
+                else
+                {
+                    markerBox.Show();
+                    markerBox.Location = directionPoints[direction];
+                    currentDirection = direction;
+                }
+
+            }
+            catch (Exception e)
+            {
+                logger.Error(e, "Failed to update direction marker");
+            }
+        }
+        protected override void OnSizeChanged(EventArgs e)
+        {
+            base.OnSizeChanged(e);
+            UpdateMarkerPositions();
+        }
+        protected override void OnFormClosed(FormClosedEventArgs e)
+        {
+            Application.Exit();
+            base.OnFormClosed(e);
+        }
+        protected override CreateParams CreateParams
+        {
+            get
+            {
+                CreateParams createParams = base.CreateParams;
+
+                createParams.ExStyle |= 0x20;  // WS_EX_TRANSPARENT
+                createParams.ExStyle &= ~0x40000;  // ~WS_EX_APPWINDOW
+                createParams.ExStyle |= 0x80;  // WS_EX_TOOLWINDOW
+
+                return createParams;
+            }
+        }
+
+        private void ico_Click(object sender, EventArgs e)
+        {
+            if (Program.BrowserForm != null)
+            {
+
+                if (Program.BrowserForm.InvokeRequired)
+                {
+                    Program.BrowserForm.Invoke(() => ico_Click(sender, e));
+                    return;
+                }
+
+                if (Program.BrowserForm.WindowState == FormWindowState.Minimized)
+                    Program.BrowserForm.WindowState = FormWindowState.Normal;
+
+                Program.BrowserForm.BringToFront();
+                Program.BrowserForm.Activate();
+            }
+        }
+
+        private void ico_ContextMenuMode(object sender, EventArgs e)
+        {
+            IsController = !IsController;
+            UpdateMarkerPositions();
+        }
+        private void ico_ContextMenuExit(object sender, EventArgs e)
+        {
+            Application.Exit();
+        }
+        internal enum Direction
+        {
+            None,
+            East,
+            West,
+            South,
+            North,
+            WestNorth,
+            WestSouth,
+            EastNorth,
+            EastSouth
+        }
+    }
+}

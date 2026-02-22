@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登录到哔哩哔哩</title>
+
+    <!-- Material Design 3 核心样式 -->
+    <!-- <link rel="stylesheet" href="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.css"> -->
+    <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/material-components-web/14.0.0/material-components-web.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --md-primary: #00A1D6;
+            /* Bilibili蓝 */
+            --md-primary-container: #E1F5FE;
+            --md-on-primary: #FFFFFF;
+            --md-surface: #FFFFFF;
+            --md-surface-variant: #F5F5F5;
+            --md-on-surface: #1A1A1A;
+            --md-on-surface-variant: #5F5F5F;
+            --md-outline: #E0E0E0;
+            --md-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+            --md-shadow-elevated: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', 'Noto Sans SC', sans-serif;
+            background-color: #FAFAFA;
+            color: var(--md-on-surface);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .login-container {
+            background-color: var(--md-surface);
+            border-radius: 24px;
+            box-shadow: var(--md-shadow-elevated);
+            width: 100%;
+            max-width: 480px;
+            overflow: hidden;
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        .header {
+            background-color: var(--md-primary);
+            color: var(--md-on-primary);
+            padding: 32px 24px;
+            text-align: center;
+            position: relative;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 16px;
+        }
+
+        .logo-icon {
+            font-size: 48px;
+            margin-right: 12px;
+        }
+
+        .logo-text {
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+
+        .title {
+            font-size: 24px;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            font-size: 16px;
+            font-weight: 400;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 32px 24px;
+        }
+
+        .benefits-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+
+        .benefit-card {
+            background-color: var(--md-surface-variant);
+            border-radius: 16px;
+            padding: 20px 16px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .benefit-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--md-shadow);
+        }
+
+        .benefit-icon {
+            background-color: var(--md-primary-container);
+            color: var(--md-primary);
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 12px;
+            font-size: 24px;
+        }
+
+        .benefit-title {
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .benefit-description {
+            font-size: 12px;
+            color: var(--md-on-surface-variant);
+            line-height: 1.4;
+        }
+
+        .disclaimer {
+            background-color: var(--md-surface-variant);
+            border-radius: 12px;
+            padding: 16px;
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 24px;
+        }
+
+        .disclaimer-icon {
+            color: var(--md-primary);
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+
+        .disclaimer-text {
+            font-size: 14px;
+            color: var(--md-on-surface-variant);
+            line-height: 1.5;
+        }
+
+        .actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        /* 自定义MDC按钮样式 */
+        .mdc-button {
+            border-radius: 100px !important;
+            font-weight: 500;
+            height: 48px;
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .mdc-button--outlined {
+            border-color: var(--md-outline) !important;
+            color: var(--md-primary) !important;
+        }
+
+        .mdc-button--outlined .mdc-button__ripple::before,
+        .mdc-button--outlined .mdc-button__ripple::after {
+            background-color: rgba(0, 0, 0, 0.532) !important;
+        }
+
+        .mdc-button--raised {
+            background-color: var(--md-primary) !important;
+            color: var(--md-on-primary) !important;
+            box-shadow: var(--md-shadow) !important;
+        }
+
+        .footer {
+            padding: 16px 24px;
+            text-align: center;
+            border-top: 1px solid var(--md-outline);
+            color: var(--md-on-surface-variant);
+            font-size: 14px;
+        }
+
+        .footer a {
+            color: var(--md-primary);
+            text-decoration: none;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .login-container {
+                border-radius: 16px;
+            }
+
+            .header {
+                padding: 24px 16px;
+            }
+
+            .content {
+                padding: 24px 16px;
+            }
+
+            .benefits-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .actions {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="login-container">
+        <div class="header">
+            <div class="logo">
+                <span class="logo-icon material-icons">play_circle</span>
+                <span class="logo-text">Genshin Grinder Helper</span>
+            </div>
+            <h1 class="title">登录到哔哩哔哩</h1>
+            <p class="subtitle">解锁更多功能</p>
+        </div>
+
+        <div class="content">
+            <div class="benefits-grid">
+                <div class="benefit-card">
+                    <div class="benefit-icon">
+                        <span class="material-icons">map</span>
+                    </div>
+                    <h3 class="benefit-title">智能方向指引</h3>
+                    <p class="benefit-description">实时识别视频字幕，自动提供准确的方向提示，终结方向不分</p>
+                    <p class="footer">（需登录以启用字幕功能）</p>
+                </div>
+
+                <div class="benefit-card">
+                    <div class="benefit-icon">
+                        <span class="material-icons">save</span>
+                    </div>
+                    <h3 class="benefit-title">播放进度记忆</h3>
+                    <p class="benefit-description">自动保存您的观看进度，下次继续无缝衔接</p>
+                </div>
+            </div>
+
+            <div class="disclaimer">
+                <span class="disclaimer-icon material-icons">info</span>
+                <p class="disclaimer-text">本程序为免费开源软件，不涉及任何游戏内存修改或注入操作，封号/异常皆与本程序无关。</p>
+            </div>
+
+            <div class="actions">
+                <button class="mdc-button mdc-button--outlined" id="declineButton">
+                    <div class="mdc-button__ripple"></div>
+                    <span class="mdc-button__label">稍后再说</span>
+                </button>
+                <button class="mdc-button mdc-button--raised" id="loginButton">
+                    <div class="mdc-button__ripple"></div>
+                    <span class="mdc-button__label">立即登录</span>
+                </button>
+            </div>
+
+            <div class="footer">
+                <p>登录数据均在您与哔哩哔哩服务器之间传输，除必要的cookie技术外，本程序不会收集或存储任何个人信息。</p>
+                <p>删除程序目录下的 <code>GenshinGrinderHelper.exe.WebView2</code> 即可清除全部浏览器数据</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Material Design 组件脚本 -->
+    <script src="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.js"></script>
+    <script>
+        // 初始化MDC组件
+        document.addEventListener('DOMContentLoaded', function () {
+            // 初始化按钮
+            const buttons = document.querySelectorAll('.mdc-button');
+            buttons.forEach(button => {
+                mdc.ripple.MDCRipple.attachTo(button);
+            });
+
+            // 添加按钮事件
+            document.getElementById('loginButton').addEventListener('click', function () {
+                window.location.href = "https://passport.bilibili.com/pc/passport/login?gourl=https://search.bilibili.com";
+            });
+
+            document.getElementById('declineButton').addEventListener('click', function () {
+                window.location.href = "https://search.bilibili.com";
+            });
+
+            // 为功能卡片添加点击效果
+            document.querySelectorAll('.benefit-card').forEach(card => {
+                card.addEventListener('click', function () {
+                    this.style.transform = 'scale(0.95)';
+                    setTimeout(() => {
+                        this.style.transform = '';
+                    }, 150);
+                });
+            });
+        });
+    </script>
+</body>
+
+</html>

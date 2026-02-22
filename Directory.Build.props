@@ -1,0 +1,15 @@
+<Project>
+	<PropertyGroup>
+		<Title>Genshin Grinder Helper</Title>
+		<RootNamespace>GenshinGrinderHelper</RootNamespace>
+		<GenerateAssemblyInfo>True</GenerateAssemblyInfo>
+		<Authors>will258012</Authors>
+		<Company>$(Authors)</Company>
+		<Copyright>Copyright © $(Authors) 2025</Copyright>
+		<Version>1.0</Version>
+		<AssemblyVersion>$(Version)</AssemblyVersion>
+		<FileVersion>$(Version)</FileVersion>
+		<AppendTargetFrameworkToOutputPath>true</AppendTargetFrameworkToOutputPath>
+		<AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+	</PropertyGroup>
+</Project>
