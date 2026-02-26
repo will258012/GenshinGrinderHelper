@@ -82,8 +82,8 @@ namespace GenshinGrinderHelper
                 { HotKeyActions.PlayPause, Keys.Oemtilde },
                 { HotKeyActions.Rewind, Keys.Left },
                 { HotKeyActions.Forward, Keys.Right },
-                { HotKeyActions.NextPart, Keys.Oemcomma },
-                { HotKeyActions.PreviousPart, Keys.OemQuestion }
+                { HotKeyActions.NextPart, Keys.OemPeriod },
+                { HotKeyActions.PreviousPart, Keys.Oemcomma }
             };
             [JsonIgnore]
             internal List<(Keys, HotKeyActions)> ReversedHotkeys => KeyBindings.Select(kvp => (kvp.Value, kvp.Key)).ToList();
