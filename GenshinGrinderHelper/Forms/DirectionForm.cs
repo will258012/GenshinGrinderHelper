@@ -1,18 +1,21 @@
 ﻿using GenshinGrinderHelper.Managers;
 using GenshinGrinderHelper.Properties;
 using static GenshinGrinderHelper.WindowUtils;
+using System.ComponentModel;
 
 namespace GenshinGrinderHelper.Forms
 {
     public partial class DirectionForm : Form
     {
-        private bool IsController
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        internal bool IsController
         {
-            get => _isController;
+            get;
             set
             {
                 BackgroundImage = value ? Resources.Direction_Controller : Resources.Direction;
-                _isController = value;
+                field = value;
+                UpdateMarkerPositions();
             }
         }
 
@@ -49,8 +52,6 @@ namespace GenshinGrinderHelper.Forms
 
         private PictureBox markerBox;
         private Direction currentDirection;
-        private bool _isController = false;
-        private NotifyIcon ico;
         private readonly System.Windows.Forms.Timer windowTimer = new();
         private readonly Logger logger = LogManager.GetCurrentClassLogger();
         protected override bool ShowWithoutActivation => true;
@@ -60,7 +61,7 @@ namespace GenshinGrinderHelper.Forms
             Initialize();
             InitializeDirectionMarkers();
             InitalizeWindowUpdate();
-            IsController = false;
+            IsController = Config.Instance.IsController;
             Enabled = false;
             logger.Info("Successfully initalized");
         }
@@ -80,22 +81,6 @@ namespace GenshinGrinderHelper.Forms
 
                 SuspendLayout();
 
-                ico = new();
-                ico.Text = "Genshin Grinder Helper";
-                ico.Visible = true;
-                ico.Click += ico_Click;
-
-#if NET48
-                ico.ContextMenu = new ContextMenu();
-                ico.ContextMenu.MenuItems.Add("切换UI偏移模式", ico_ContextMenuMode);
-                ico.ContextMenu.MenuItems.Add("退出", ico_ContextMenuExit);
-#endif
-#if NET10_0_OR_GREATER
-                ico.ContextMenuStrip = new ContextMenuStrip();
-                ico.ContextMenuStrip.RenderMode = ToolStripRenderMode.System;
-                ico.ContextMenuStrip.Items.Add("切换UI偏移模式", null, ico_ContextMenuMode);
-                ico.ContextMenuStrip.Items.Add("退出", null, ico_ContextMenuExit);
-#endif
                 AutoScaleDimensions = new SizeF(6f, 12f);
                 AutoScaleMode = AutoScaleMode.Font;
                 AutoSize = true;
@@ -371,15 +356,6 @@ namespace GenshinGrinderHelper.Forms
             }
         }
 
-        private void ico_ContextMenuMode(object sender, EventArgs e)
-        {
-            IsController = !IsController;
-            UpdateMarkerPositions();
-        }
-        private void ico_ContextMenuExit(object sender, EventArgs e)
-        {
-            Application.Exit();
-        }
         internal enum Direction
         {
             None,

@@ -71,6 +71,7 @@ namespace GenshinGrinderHelper
 
         public bool ShowOnTop { get; set; } = true;
         public bool LoadingIndicator { get; set; } = true;
+        public bool IsController { get; set; } = false;
         public HotKeySettings HotKeys { get; set; } = new();
         public class HotKeySettings
         {

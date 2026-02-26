@@ -5,7 +5,7 @@
 		<GenerateAssemblyInfo>True</GenerateAssemblyInfo>
 		<Authors>will258012</Authors>
 		<Company>$(Authors)</Company>
-		<Copyright>Copyright © $(Authors) 2025</Copyright>
+		<Copyright>Copyright © $(Authors) 2026</Copyright>
 		<Version>1.0</Version>
 		<AssemblyVersion>$(Version)</AssemblyVersion>
 		<FileVersion>$(Version)</FileVersion>

@@ -55,7 +55,7 @@ namespace GenshinGrinderHelper
 
                 BrowserForm = new BrowserForm();
 
-                Thread browserThread = new Thread(() =>
+                Thread browserThread = new(() =>
                 {
                     DirectionForm = new DirectionForm();
                     Application.Run(DirectionForm);

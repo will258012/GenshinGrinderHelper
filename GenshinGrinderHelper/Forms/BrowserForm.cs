@@ -138,6 +138,12 @@ namespace GenshinGrinderHelper.Forms
             toolbar.MouseLeave += (s, e) => hideTimer.Start();
 #if NET48
             toolbar.ContextMenu = new ContextMenu();
+            toolbar.ContextMenu.MenuItems.Add("切换方向显示偏移模式（键盘/手柄） (&D)", (s, e) =>
+            {
+                Config.Instance.IsController = !Config.Instance.IsController;
+                Program.DirectionForm?.IsController = Config.Instance.IsController;
+                Config.Instance.SaveConfig();
+            });
             toolbar.ContextMenu.MenuItems.Add("键位绑定工具 (&K)", (s, e) =>
             {
                 using KeyBindingForm form = new();
@@ -160,6 +166,12 @@ namespace GenshinGrinderHelper.Forms
 #endif
 #if NET10_0_OR_GREATER
             toolbar.ContextMenuStrip = new ContextMenuStrip();
+            toolbar.ContextMenuStrip.Items.Add("切换方向显示偏移模式（键盘/手柄） (&D)", null, (s, e) =>
+            {
+                Config.Instance.IsController = !Config.Instance.IsController;
+                Program.DirectionForm?.IsController = Config.Instance.IsController;
+                Config.Instance.SaveConfig();
+            });
             toolbar.ContextMenuStrip.Items.Add("键位绑定工具 (&K)", null, (s, e) =>
             {
                 using KeyBindingForm hotkeyForm = new();
