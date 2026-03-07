@@ -27,9 +27,9 @@ namespace GenshinGrinderHelper.Forms
                 (Direction.EastNorth, ["东北"]),
                 (Direction.EastSouth, ["东南"]),
                 (Direction.North,    ["北"]),
-                (Direction.East,     ["东", "西东"]),
+                (Direction.East,     ["东"]),
                 (Direction.South,    ["南"]),
-                (Direction.West,     ["西", "东西"]),
+                (Direction.West,     ["西"]),
 
                 (Direction.WestNorth, ["10点", "十点", "11点", "十一点"]),
                 (Direction.North,     ["12点", "十二点"]),
@@ -40,15 +40,22 @@ namespace GenshinGrinderHelper.Forms
                 (Direction.WestSouth, ["7点", "七点", "8点", "八点"]),
                 (Direction.West,      ["9点", "九点"]),
 
-/*                (Direction.WestNorth, ["地图左上"]),
+                (Direction.WestNorth, ["地图左上"]),
                 (Direction.WestSouth, ["地图左下"]),
                 (Direction.EastNorth, ["地图右上"]),
                 (Direction.EastSouth, ["地图右下"]),
                 (Direction.North,    ["地图上"]),
                 (Direction.East,     ["地图右"]),
                 (Direction.South,    ["地图下"]),
-                (Direction.West,     ["地图左"]),*/
+                (Direction.West,     ["地图左"]),
             ];
+        private static readonly Dictionary<Direction, double> compoundDirections = new()
+        {
+            { Direction.EastNorth,  Math.PI / 4 },
+            { Direction.EastSouth, -Math.PI / 4 },
+            { Direction.WestSouth, -3 * Math.PI / 4 },
+            { Direction.WestNorth,  3 * Math.PI / 4 }
+        };
 
         private PictureBox markerBox;
         private Direction currentDirection;
@@ -98,6 +105,9 @@ namespace GenshinGrinderHelper.Forms
                 TopMost = true;
                 TransparencyKey = Color.White;
                 ResumeLayout(false);
+#if DEBUG
+                _ = TestMarker();
+#endif
             }
             catch (Exception e)
             {
@@ -107,7 +117,7 @@ namespace GenshinGrinderHelper.Forms
         }
         private void InitalizeWindowUpdate()
         {
-            windowTimer.Interval = 10;
+            windowTimer.Interval = 16;
             windowTimer.Tick += (s, e) => UpdateWindow();
             windowTimer.Start();
         }
@@ -138,22 +148,18 @@ namespace GenshinGrinderHelper.Forms
 
                 var newLocation = new Point(ct.Left, ct.Top);
 
-                var needUpdate = (Width != newWidth) ||
-                           (Height != newHeight) ||
-                           (Location != newLocation);
+                var needUpdate = !(Width == newWidth &&
+                           Height == newHeight &&
+                           Location == newLocation);
 
                 if (!needUpdate) return;
 
                 SuspendLayout();
 
-                if (Height != newHeight)
-                    Height = newHeight;
-                if (Width != newWidth)
-                    Width = newWidth;
-                if (Location != newLocation)
-                    Location = newLocation;
+                Size = new Size(newWidth, newHeight);
+                Location = newLocation;
 
-                BringToFront();
+                TopMost = true;
                 UpdateMarkerPositions();
                 ResumeLayout();
             }
@@ -188,16 +194,19 @@ namespace GenshinGrinderHelper.Forms
                 throw;
             }
         }
+#if DEBUG
+        private async Task TestMarker()
+        {
+            foreach (Direction direction in Enum.GetValues(typeof(Direction)))
+            {
+                if (direction == Direction.None)
+                    continue;
 
-        /*        private async void TestMarker()
-                {
-                    foreach (var direction in new[] { "北", "东北", "东", "东南", "南", "东南", "西", "西北" })
-                    {
-                        UpdateDirectionMarker(direction);
-                        await Task.Delay(500);
-                    }
-                }
-        */
+                await UpdateDirectionMarker(direction);
+                await Task.Delay(500);
+            }
+        }
+#endif
 
         private void UpdateMarkerPositions()
         {
@@ -229,16 +238,6 @@ namespace GenshinGrinderHelper.Forms
                 (int)(10 / 1440f * Height)
             );
 
-            // 45度方向使用圆形布局
-            var angle45 = Math.PI / 4;
-            var compoundDirections = new Dictionary<Direction, double>
-            {
-                { Direction.EastNorth, angle45 },
-                { Direction.EastSouth, 2 * Math.PI - angle45 },
-                { Direction.WestSouth, Math.PI + angle45 },
-                { Direction.WestNorth, Math.PI - angle45 }
-            };
-
             foreach (var dir in compoundDirections)
             {
                 directionPoints[dir.Key] = new Point(
@@ -247,14 +246,14 @@ namespace GenshinGrinderHelper.Forms
                 );
             }
 
-            //logger.Info("Updated direction positions: {@directions}", directionPoints);
+            //logger.Trace("Updated direction positions: {@directions}", directionPoints);
         }
 
-        public void HandleSubtitleText(string subtitleText)
+        public async void HandleSubtitleText(string subtitleText)
         {
             if (InvokeRequired)
             {
-                Invoke(() => HandleSubtitleText(subtitleText));
+                BeginInvoke(() => HandleSubtitleText(subtitleText));
                 return;
             }
 
@@ -274,7 +273,7 @@ namespace GenshinGrinderHelper.Forms
                         if (subtitleText.Contains(keyword))
                         {
                             matched = true;
-                            UpdateDirectionMarker(direction);
+                            await UpdateDirectionMarker(direction);
                             break;
                         }
                     }
@@ -285,7 +284,7 @@ namespace GenshinGrinderHelper.Forms
             }
         }
 
-        private async void UpdateDirectionMarker(Direction direction)
+        private async Task UpdateDirectionMarker(Direction direction)
         {
             try
             {
@@ -313,11 +312,6 @@ namespace GenshinGrinderHelper.Forms
                 logger.Error(e, "Failed to update direction marker");
             }
         }
-        protected override void OnSizeChanged(EventArgs e)
-        {
-            base.OnSizeChanged(e);
-            UpdateMarkerPositions();
-        }
         protected override void OnFormClosed(FormClosedEventArgs e)
         {
             Application.Exit();
@@ -332,30 +326,11 @@ namespace GenshinGrinderHelper.Forms
                 createParams.ExStyle |= 0x20;  // WS_EX_TRANSPARENT
                 createParams.ExStyle &= ~0x40000;  // ~WS_EX_APPWINDOW
                 createParams.ExStyle |= 0x80;  // WS_EX_TOOLWINDOW
+                createParams.ExStyle |= 0x08000000; // WS_EX_NOACTIVATE
 
                 return createParams;
             }
         }
-
-        private void ico_Click(object sender, EventArgs e)
-        {
-            if (Program.BrowserForm != null)
-            {
-
-                if (Program.BrowserForm.InvokeRequired)
-                {
-                    Program.BrowserForm.Invoke(() => ico_Click(sender, e));
-                    return;
-                }
-
-                if (Program.BrowserForm.WindowState == FormWindowState.Minimized)
-                    Program.BrowserForm.WindowState = FormWindowState.Normal;
-
-                Program.BrowserForm.BringToFront();
-                Program.BrowserForm.Activate();
-            }
-        }
-
         internal enum Direction
         {
             None,
