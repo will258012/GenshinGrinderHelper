@@ -87,4 +87,13 @@
 	<Target Name="Copy" AfterTargets="Build">
 		<Copy SourceFiles="@(HotKeyListener)" DestinationFiles="$(OutDir)\GenshinGrinderHelper.HotKeyListener.exe" />
 	</Target>
+	
+	<Target Name="IncludeHotKeyListenerInPublish" BeforeTargets="PrepareForPublish">
+		<ItemGroup>
+			<ResolvedFileToPublish Include="@(HotKeyListener)">
+				<RelativePath>GenshinGrinderHelper.HotKeyListener.exe</RelativePath>
+				<CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+			</ResolvedFileToPublish>
+		</ItemGroup>
+	</Target>
 </Project>
