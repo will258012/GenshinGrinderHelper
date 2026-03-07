@@ -1,4 +1,4 @@
-﻿namespace GenshinGrinderHelper
+﻿namespace GenshinGrinderHelper.Forms
 {
     partial class About
     {

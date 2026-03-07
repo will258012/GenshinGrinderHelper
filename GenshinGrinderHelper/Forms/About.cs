@@ -5,7 +5,7 @@ using System.Drawing;
 using System.Reflection;
 using System.Windows.Forms;
 
-namespace GenshinGrinderHelper
+namespace GenshinGrinderHelper.Forms
 {
     partial class About : Form
     {
