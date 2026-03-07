@@ -261,7 +261,7 @@ namespace GenshinGrinderHelper.Managers
         {
             if (Program.BrowserForm.InvokeRequired)
             {
-                Program.BrowserForm.Invoke(new Action(() => SendInput(key)));
+                Program.BrowserForm.BeginInvoke(() => SendInput(key));
                 return;
             }
 /*
